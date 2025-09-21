@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube TS Chatbot",
+    "version": "1.0.0",
+    "description": "A chatbot extension that provides RAG-based chat context for YouTube videos.",
+    "permissions": ["scripting", "tabs"],
+    "host_permissions": ["https://www.youtube.com/*"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "index.html",
+      "default_title": "YouTube Chatbot"
+    },
+    "content_scripts": [
+      {
+        "matches": ["https://www.youtube.com/*"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ]
+  }
+  
