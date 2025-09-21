@@ -1,4 +1,4 @@
-import { Clock, ExternalLink } from "lucide-react";
+// Removed unused imports - Clock and ExternalLink are commented out in the JSX
 
 interface Message {
   id: string;

@@ -1,7 +1,6 @@
 import { useSession } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -20,9 +19,6 @@ export function AuthPage() {
   const {session} = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  // const [email, setEmail] = useState<string>("");
-  // const [password, setPassword] = useState<string>("")
-  const navigate = useNavigate();
 
   console.log("session: ", session)
 
@@ -76,11 +72,10 @@ export function AuthPage() {
       ? await signUpNewUser(email, password)
       : await signInUser(email, password);
 
-      if (result.success) {
-        navigate("/chat");
-      } else {
+      if (!result.success) {
         setError(result.error || "Authentication failed. Try again");
       }
+      // No need to navigate - App.tsx will automatically show ChatPage when authenticated
     } finally {
       setIsLoading(false);
     }

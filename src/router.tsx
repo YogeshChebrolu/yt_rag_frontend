@@ -1,25 +1,19 @@
 import { createHashRouter } from "react-router-dom";
 import App from "./App";
-import { AuthPage } from "./components/AuthPage";
-import { PrivateRoute } from "./components/PrivateRoute";
-import { ChatMessage } from "./components/ChatMessage";
 
 // Use hash router for browser extension compatibility
+// Simplified routing - App.tsx now handles conditional rendering based on auth state
 export const router = createHashRouter([
     { 
         path: "/", 
         element: <App />,
         errorElement: <div className="text-center p-4 text-red-500">Something went wrong! Please try again.</div>
     },
-    { 
-        path: "/auth", 
-        element: <AuthPage />,
-        errorElement: <div className="text-center p-4 text-red-500">Authentication error! Please try again.</div>
-    },
-    { 
-        path: "/chat",
-        element: <PrivateRoute><ChatMessage /></PrivateRoute>,
-        errorElement: <div className="text-center p-4 text-red-500">Chat error! Please try again.</div>
+    // Catch-all route to redirect to main app
+    {
+        path: "*",
+        element: <App />,
+        errorElement: <div className="text-center p-4 text-red-500">Page not found! Redirecting to main app.</div>
     }
 ], {
     // Add fallback for extension context
