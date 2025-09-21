@@ -52,47 +52,78 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
   }, []);
 
   useEffect(() => {
-    const handler = (message: any) => {
+    let port: any = null;
+
+    const initializeChromeConnection = () => {
       try {
-        if (message.type === "VIDEO_ID_UPDATE") {
-          console.log("VideoContext received video ID update:", message.video_id);
-          setCurrentVideoId(message.video_id);
-          // Reset error state when video changes
-          setError(null);
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+          // Connect to background script
+          port = chrome.runtime.connect({ name: "popup" });
+          console.log("Connected to background script");
+
+          // Listen for messages from background script
+          port.onMessage.addListener((message: any) => {
+            try {
+              if (message.type === "VIDEO_ID_UPDATE") {
+                console.log("VideoContext received video ID update:", message.video_id);
+                setCurrentVideoId(message.video_id);
+                setError(null);
+              }
+            } catch (error) {
+              console.error("Error handling background message:", error);
+              setError("Failed to handle video ID update");
+            }
+          });
+
+          port.onDisconnect.addListener(() => {
+            console.log("Disconnected from background script");
+          });
+
+          // Also check chrome storage for current video ID
+          chrome.storage.local.get(['currentVideoId'], (result: any) => {
+            if (chrome.runtime.lastError) {
+              console.error("Failed to get stored video ID:", chrome.runtime.lastError.message);
+            } else if (result.currentVideoId) {
+              console.log("Retrieved stored video ID:", result.currentVideoId);
+              setCurrentVideoId(result.currentVideoId);
+              setError(null);
+            }
+          });
+
+          // Listen for storage changes
+          chrome.storage.onChanged.addListener((changes: any, namespace: any) => {
+            if (namespace === 'local' && changes.currentVideoId) {
+              console.log("Video ID changed in storage:", changes.currentVideoId.newValue);
+              setCurrentVideoId(changes.currentVideoId.newValue);
+              setError(null);
+            }
+          });
+
+        } else {
+          console.warn("Chrome extension API not available");
+          setError("Chrome extension API not available");
         }
       } catch (error) {
-        console.error("Error handling Chrome extension message:", error);
-        setError("Failed to handle video ID update");
+        console.error("Failed to initialize Chrome extension communication:", error);
+        setError("Failed to initialize Chrome extension communication");
       }
     };
 
-    // Add error handling for Chrome extension API calls
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-        chrome.runtime.onMessage.addListener(handler);
-        console.log("Chrome extension message listener added");
-      } else {
-        console.warn("Chrome extension API not available");
-        setError("Chrome extension API not available");
-      }
-    } catch (error) {
-      console.error("Failed to add Chrome extension message listener:", error);
-      setError("Failed to initialize Chrome extension communication");
-    }
+    initializeChromeConnection();
 
     return () => {
       try {
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-          chrome.runtime.onMessage.removeListener(handler);
-          console.log("Chrome extension message listener removed");
+        if (port) {
+          port.disconnect();
+          console.log("Chrome extension port disconnected");
         }
       } catch (error) {
-        console.error("Error removing Chrome extension message listener:", error);
+        console.error("Error disconnecting Chrome extension port:", error);
       }
     };
   }, []);
 
-
+  // Auto-initialize video when currentVideoId changes and user is authenticated
   const handleInitializeVideo = useCallback(async (videoId: string) => {
     setCurrentVideoId(videoId);
     setChatHistory([]);
@@ -118,6 +149,14 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
       setVideoStatus("ERROR");
     }
   }, []);
+  useEffect(() => {
+    if (currentVideoId && session?.user?.id) {
+      console.log("Auto-initializing video:", currentVideoId);
+      handleInitializeVideo(currentVideoId);
+    }
+  }, [currentVideoId, session?.user?.id, handleInitializeVideo]);
+
+
 
   const handleProcessCurrentVideo = useCallback(async () => {
     if (!currentVideoId) {
