@@ -7,7 +7,8 @@
       "scripting", 
       "tabs", 
       "storage", 
-      "activeTab"
+      "activeTab",
+      "sidePanel"
     ],
     "host_permissions": [
       "https://www.youtube.com/*",
@@ -18,8 +19,10 @@
       "service_worker": "background.js"
     },
     "action": {
-      "default_popup": "index.html",
-      "default_title": "YouTube Chatbot"
+      "default_title": "Open YouTube Chatbot"
+    },
+    "side_panel": {
+      "default_path": "index.html"
     },
     "content_scripts": [
       {

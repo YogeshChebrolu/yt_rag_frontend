@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Store the video ID in background script
       currentVideoId = message.video_id;
       
-      // Store in chrome storage for popup to access
+      // Store in chrome storage for side panel to access
       try {
         chrome.storage.local.set({ 
           currentVideoId: message.video_id,
@@ -32,12 +32,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   });
 
-// Handle popup connection and send current video ID
+// Handle side panel connection and send current video ID
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === "popup") {
-    console.log("Popup connected");
+  if (port.name === "sidepanel") {
+    console.log("Side panel connected");
     
-    // Send current video ID to popup when it connects
+    // Send current video ID to side panel when it connects
     if (currentVideoId) {
       port.postMessage({
         type: "VIDEO_ID_UPDATE",
@@ -46,7 +46,31 @@ chrome.runtime.onConnect.addListener((port) => {
     }
     
     port.onDisconnect.addListener(() => {
-      console.log("Popup disconnected");
+      console.log("Side panel disconnected");
     });
+  }
+});
+
+// Handle extension icon click to open side panel
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    // Open the side panel for the current tab
+    await chrome.sidePanel.open({ tabId: tab.id });
+    console.log("Side panel opened for tab:", tab.id);
+  } catch (error) {
+    console.error("Failed to open side panel:", error);
+  }
+});
+
+// Auto-open side panel when user navigates to YouTube
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url && tab.url.includes('youtube.com/watch')) {
+    try {
+      // Auto-open side panel when on YouTube video page
+      await chrome.sidePanel.open({ tabId: tabId });
+      console.log("Auto-opened side panel for YouTube video:", tab.url);
+    } catch (error) {
+      console.error("Failed to auto-open side panel:", error);
+    }
   }
 });

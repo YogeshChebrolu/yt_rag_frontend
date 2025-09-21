@@ -58,7 +58,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
       try {
         if (typeof chrome !== 'undefined' && chrome.runtime) {
           // Connect to background script
-          port = chrome.runtime.connect({ name: "popup" });
+          port = chrome.runtime.connect({ name: "sidepanel" });
           console.log("Connected to background script");
 
           // Listen for messages from background script

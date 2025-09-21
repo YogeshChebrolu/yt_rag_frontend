@@ -194,7 +194,7 @@ export function ChatPage() {
   }
 
   return (
-    <div className="h-screen w-full max-w-sm mx-auto flex flex-col bg-background">
+    <div className="h-screen w-full flex flex-col bg-background">
       {/* Header with Profile */}
       <div className="border-b bg-card p-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
