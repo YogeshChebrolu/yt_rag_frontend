@@ -36,7 +36,7 @@ interface VideoContextProviderProps {
 }
 
 export const VideoContextProvider = ({ children }: VideoContextProviderProps) => {
-  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>("7gtc1DW2Tgo");
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +132,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
 
     try {
       const statusResult = await checkVideoStatus(videoId);
-      if (statusResult?.isProcessed) {
+      if (statusResult?.status === "processed") {
         setVideoStatus("READY");
 
         const historyRequest: HistoryRequest = { video_id: videoId };
@@ -201,14 +201,14 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
       const chatRequest: ChatRequest = {
         video_id: currentVideoId,
         query: messageText,
-        user_id: session.user.id
+        // user_id: session.user.id
       };
 
       const assistantResponse = await sendChatMessage(chatRequest);
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: "ASSISTANT",
-        content: assistantResponse,
+        content: assistantResponse?.content || "Unable to process AI response. Try Again",
         timestamp: new Date(),
         video_id: currentVideoId
       };

@@ -25,9 +25,11 @@ export async function checkVideoStatus(videoId: string){
 
 export async function processVideo(videoId: string) {
   try {
+    const JWTheader = await getJWTHeaders();
     const response = await fetch(`${API_URL}/video/${videoId}/process_video`, {
       method: "POST",
       headers: {
+        ...JWTheader,
         "Content-Type": "application/json",
       },
     });

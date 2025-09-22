@@ -65,7 +65,7 @@ export function ProfileCard(){
 
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-popover border shadow-lg"
+        className="w-56 bg-popover border shadow-lg bg-white"
         sideOffset={8}
       >
         <DropdownMenuLabel>

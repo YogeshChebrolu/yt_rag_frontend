@@ -9,7 +9,8 @@ export function VideoStatus() {
   const { 
     currentVideoId, 
     videoStatus, 
-    error, 
+    error,
+    setError,
     handleInitializeVideo, 
     handleProcessCurrentVideo 
   } = useVideoContext()
@@ -27,6 +28,9 @@ export function VideoStatus() {
     setIsProcessing(true)
     try {
       await handleProcessCurrentVideo()
+    } catch(error) {
+      setError("Failed to process video")
+      console.error(`Error processing the video: ${currentVideoId}`)
     } finally {
       setIsProcessing(false)
     }

@@ -5,7 +5,7 @@ const API_URL = "http://localhost:8000/core/v1"
 export interface ChatRequest{
     video_id: string
     query: string
-    user_id: string
+    // user_id: string
 }
 
 export async function sendChatMessage(request: ChatRequest ){
@@ -26,7 +26,7 @@ export async function sendChatMessage(request: ChatRequest ){
 
     const data = await response.json();
     console.log(data)
-    return data.response;
+    return data.content;
   } catch (error) {
     console.log("Failed to send chat messages", error);
     return 'Error: could not reach backend';
@@ -49,7 +49,7 @@ export async function getChatHistory( request: HistoryRequest ){
     });
 
     const data = await response.json()
-    return data.response;
+    return data;
   } catch (error) {
     console.error(`Failed to get chat history: ${error}`)
     return 'Error: could not retrieve history'

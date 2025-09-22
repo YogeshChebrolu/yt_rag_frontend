@@ -5,10 +5,11 @@ import { useState, useEffect, useRef } from "react"
 import { ChatMessage } from "./ChatMessage";
 import { VideoStatus } from "./VideoStatus";
 import { ProfileCard } from "./ProfileCard";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Paperclip, Send, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
+import { Textarea } from "./ui/textarea";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -33,7 +34,7 @@ export function ChatPage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const previousVideoIdRef = useRef<string | null>(null);
 
   const scrollToBottom = () => {
@@ -64,10 +65,10 @@ export function ChatPage() {
         const { getChatHistory } = await import("@/api/chat");
         const historyResponse = await getChatHistory({ video_id: currentVideoId });
         
-        if (Array.isArray(historyResponse)) {
+        if (historyResponse && Array.isArray(historyResponse.history)) {
           // Convert API response to Message format
-          const formattedHistory: Message[] = historyResponse.map((msg: any) => ({
-            id: msg.id || Date.now().toString(),
+          const formattedHistory: Message[] = historyResponse.history.map((msg: any) => ({
+            id: msg.id,
             role: msg.role,
             content: msg.content,
             timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
@@ -141,8 +142,9 @@ export function ChatPage() {
       const aiResponse = await sendChatMessage({
         query: messageText,
         video_id: currentVideoId,
-        user_id: session.user.id
+        // user_id: session.user.id
       });
+      console.log(aiResponse)
 
       const aiMessage: Message = {
         id: `ai-${Date.now()}`,
@@ -198,6 +200,12 @@ export function ChatPage() {
       {/* Header with Profile */}
       <div className="border-b bg-card p-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
+          <img
+            src="/icons/logo.png"
+            alt="Logo"
+            className="w-7 h-7 rounded"
+            style={{ objectFit: "contain" }}
+          />
           <h1 className="text-lg font-semibold text-foreground">YT Chat</h1>
         </div>
         <ProfileCard />
@@ -254,25 +262,40 @@ export function ChatPage() {
           <div className="flex justify-start">
             <div className="bg-ai-message text-ai-message-foreground rounded-2xl rounded-bl-md px-4 py-3 max-w-[85%] shadow-sm">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                <div className="w-2 h-2 bg-black/40 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                <div className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
               </div>
             </div>
           </div>
         )}
 
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Messages Input */}
-      <div className="border-t bg-card p-4">
+      <div className="bg-card pt-4">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
-            <Input
+            {/* <Input
               ref={inputRef}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
+              placeholder={getPlaceholderText()}
+              className="pr-12 rounded-full border-border/50 focus:border-primary transition-colors"
+              disabled={isChatDisabled}
+            /> */}
+            <Textarea
+              ref={inputRef}
+              value={newMessage}
+              onChange={(e)=> setNewMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }}
               placeholder={getPlaceholderText()}
               className="pr-12 rounded-full border-border/50 focus:border-primary transition-colors"
               disabled={isChatDisabled}
@@ -296,6 +319,11 @@ export function ChatPage() {
             <Send className="w-4 h-4" />
           </Button>
         </form>
+      </div>
+      <div className="text-sm text-muted-foreground text-center pt-2">
+        <ReactMarkdown>
+          **Enter** to `send` and **Shift+Enter** to `new line`
+        </ReactMarkdown>
       </div>
     </div>
   );
