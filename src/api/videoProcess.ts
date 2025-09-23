@@ -39,7 +39,7 @@ export async function processVideo(videoId: string) {
     }
 
     const data = await response.json()
-    return data.response;
+    return data;
   } catch (error) {
     console.error("Failed during sending request to process video")
   }

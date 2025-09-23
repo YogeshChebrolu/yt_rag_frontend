@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "YouTube TS Chatbot",
+    "name": "YT Chatbot",
     "version": "1.0.0",
     "description": "A chatbot extension that provides RAG-based chat context for YouTube videos.",
     "permissions": [

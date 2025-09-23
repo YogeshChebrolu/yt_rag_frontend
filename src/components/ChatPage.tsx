@@ -275,7 +275,7 @@ export function ChatPage() {
       </div>
 
       {/* Messages Input */}
-      <div className="bg-card pt-4">
+      <div className="bg-card pt-4 ml-2">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             {/* <Input
@@ -320,7 +320,7 @@ export function ChatPage() {
           </Button>
         </form>
       </div>
-      <div className="text-sm text-muted-foreground text-center pt-2">
+      <div className="text-sm text-muted-foreground text-center py-2">
         <ReactMarkdown>
           **Enter** to `send` and **Shift+Enter** to `new line`
         </ReactMarkdown>

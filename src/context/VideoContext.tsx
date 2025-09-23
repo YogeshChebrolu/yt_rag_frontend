@@ -36,7 +36,7 @@ interface VideoContextProviderProps {
 }
 
 export const VideoContextProvider = ({ children }: VideoContextProviderProps) => {
-  const [currentVideoId, setCurrentVideoId] = useState<string | null>("7gtc1DW2Tgo");
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -140,8 +140,10 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
         if (Array.isArray(history)) {
           setChatHistory(history);
         }
+      } else if (statusResult?.status === "processing"){
+        setVideoStatus("PROCESSING");
       } else {
-        setVideoStatus("NOT_PROCESSED");
+        setVideoStatus("NOT_PROCESSED")
       }
     } catch (error) {
       console.error("Failed to initialize video:", error);
@@ -168,8 +170,13 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
     setError(null);
 
     try {
-      await processVideo(currentVideoId);
-      setVideoStatus("READY");
+
+       const response = await processVideo(currentVideoId);
+       if (response?.status === "processed") {
+        setVideoStatus("READY")
+       } else {
+        setVideoStatus("NOT_PROCESSED")
+       }
     } catch (error) {
       console.error("Failed to process video:", error);
       setError("Failed to process the video");

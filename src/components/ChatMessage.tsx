@@ -123,7 +123,9 @@ export function ChatMessage( { message } : ChatMessageProps){
         <div className={`mt-1 px-2 ${isUser ? "text-right" : "text-left"}`}>
           <span className="text-xs text-muted-foreground">
             {message.timestamp.toLocaleTimeString([], {
-              // dateStyle: "short",
+              day: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
               hour: "2-digit",
               minute: "2-digit", 
             })}
