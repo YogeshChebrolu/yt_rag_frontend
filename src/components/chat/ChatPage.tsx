@@ -22,7 +22,7 @@ interface Message {
 }
 
 interface NotesContent {
-  notedId: string;
+  notes_id: string;
   content: string;
 }
 
@@ -177,7 +177,7 @@ export function ChatPage() {
         console.log("Reply from create notes api:", notesResponse)
         setShowUpdateNotesStatus(true);
         setNotesContent({
-          "notedId": notesResponse.notes_id,
+          "notes_id": notesResponse.notes_id,
           "content": notesResponse.content
         })
 

@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import toast from "react-hot-toast";
 
 interface NotesContent {
-  notedId: string;
+  notes_id: string;
   content: string;
 }
 
@@ -66,14 +66,22 @@ export function UpdateNotesStatusDialog({
           <Button
             size="sm"
             className="bg-gray-400 hover:bg-gray-300"
-            onClick={()=> handleNotesStatus(notesContent?.notedId, "DISAPPROVED")}
+            onClick={()=> {
+              if (notesContent?.notes_id) {
+                handleNotesStatus(notesContent.notes_id, "DISAPPROVED")
+              }
+            }}
           >
             Discard Notes
           </Button>
           <Button
             size="sm"
             className="bg-green-400 hover:bg-green-500"
-            onClick={()=> handleNotesStatus(notesContent?.notedId, "APPROVED")}
+            onClick={()=> {
+              if (notesContent?.notes_id) {
+                handleNotesStatus(notesContent.notes_id, "APPROVED")
+              }
+            }}
           >
             Accept Notes
           </Button>

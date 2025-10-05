@@ -7,7 +7,12 @@ export interface CreateNotesRequest{
   query: string;
 }
 
-export async function createNotes(request: CreateNotesRequest){
+export interface CreateNotesResponse {
+  notes_id: string;
+  content: string;
+}
+
+export async function createNotes(request: CreateNotesRequest): Promise<CreateNotesResponse> {
   const JWTHeaders = await getJWTHeaders();
   try{
     const response = await fetch(`${API_URL}/notes/create_notes`, {
