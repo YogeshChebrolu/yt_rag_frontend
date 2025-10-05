@@ -1,7 +1,7 @@
 import './App.css'
 import { useSession } from './context/AuthContext'
 import { AuthPage } from './components/AuthPage'
-import { ChatPage } from './components/ChatPage'
+import { ChatPage } from './components/chat/ChatPage'
 
 function App() {
   const { session, isAuthenticated, isLoading } = useSession()

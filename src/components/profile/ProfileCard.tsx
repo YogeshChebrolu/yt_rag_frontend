@@ -1,9 +1,9 @@
 import { useSession } from "@/context/AuthContext"
 import { useState, useEffect } from "react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "./ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "../ui/dropdown-menu"
 import { DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
-import { Button } from "./ui/button"
-import { Avatar, AvatarFallback } from "./ui/avatar"
+import { Button } from "../ui/button"
+import { Avatar, AvatarFallback } from "../ui/avatar"
 import { ChevronDown, LogOut, Settings, User } from "lucide-react"
 
 export function ProfileCard(){

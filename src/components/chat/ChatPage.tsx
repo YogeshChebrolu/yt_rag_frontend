@@ -3,14 +3,13 @@ import { useSession } from "@/context/AuthContext";
 import { useVideoContext } from "@/context/VideoContext";
 import { useState, useEffect, useRef } from "react"
 import { ChatMessage } from "./ChatMessage";
-import { VideoStatus } from "./VideoStatus";
-import { ProfileCard } from "./ProfileCard";
-import { Button } from "./ui/button";
-import { Paperclip, Send, AlertCircle, RefreshCw } from "lucide-react";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Textarea } from "./ui/textarea";
+import { VideoStatus } from "../VideoStatus";
+import { ProfileCard } from "../profile/ProfileCard";
+import { Button } from "../ui/button";
+import { Paperclip, Send, AlertCircle, RefreshCw, FilePlus2 } from "lucide-react";
+import { Alert, AlertDescription } from "../ui/alert";
+import { Textarea } from "../ui/textarea";
 import ReactMarkdown from "react-markdown";
-
 interface Message {
   id: string;
   role: "USER" | "ASSISTANT";
@@ -306,9 +305,7 @@ export function ChatPage() {
               size="sm"
               className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full p-0 hover:bg-muted"
               disabled={isChatDisabled}
-            >
-              <Paperclip className="w-4 h-4" />
-            </Button>
+            />
           </div>
 
           <Button
@@ -319,6 +316,27 @@ export function ChatPage() {
             <Send className="w-4 h-4" />
           </Button>
         </form>
+        <div className="flex items-center mt-2 space-x-2">
+          <div>
+            <Button 
+            className="bg-gray-200 rounded-full w-auto text-sm text-gray-700 hover:bg-gray-300"
+            // disabled={isChatDisabled || inputMode === "notes"}
+            >
+              <Paperclip className="w-4 h-4"/>
+              Select Notes
+            </Button>
+          </div>
+          <div>
+            <Button 
+            className="bg-gray-200 rounded-full w-auto text-sm text-gray-700 hover:bg-gray-300"
+            // disabled={isChatDisabled}
+            // onClick={() =>setInputMode("notes")}
+            >
+              <FilePlus2 className="w-4 h-4"/>
+              Create Notes
+            </Button>
+          </div>
+        </div>
       </div>
       <div className="text-sm text-muted-foreground text-center py-2">
         <ReactMarkdown>
