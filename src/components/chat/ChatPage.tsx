@@ -1,7 +1,8 @@
 import { sendChatMessage } from "@/api/chat";
+import { createNotes } from "@/api/notes";
 import { useSession } from "@/context/AuthContext";
 import { useVideoContext } from "@/context/VideoContext";
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { ChatMessage } from "./ChatMessage";
 import { VideoStatus } from "../VideoStatus";
 import { ProfileCard } from "../profile/ProfileCard";
@@ -10,12 +11,19 @@ import { Paperclip, Send, AlertCircle, RefreshCw, FilePlus2 } from "lucide-react
 import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
 import ReactMarkdown from "react-markdown";
+import { UpdateNotesStatusDialog } from "../notes/UpdateNotesStatusDialog";
+
 interface Message {
   id: string;
   role: "USER" | "ASSISTANT";
   content: string;
   timestamp: Date;
   video_id?: string;
+}
+
+interface NotesContent {
+  notedId: string;
+  content: string;
 }
 
 export function ChatPage() {
@@ -32,9 +40,14 @@ export function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [inputMode, setInputMode] = useState<"attach" | "notes" | "normal">("normal")
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const previousVideoIdRef = useRef<string | null>(null);
+
+  const [ showUpdateNotesStatus, setShowUpdateNotesStatus ] = useState<boolean>(false);
+  const [ notesContent, setNotesContent ] = useState<NotesContent | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -138,22 +151,37 @@ export function ChatPage() {
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      const aiResponse = await sendChatMessage({
-        query: messageText,
-        video_id: currentVideoId,
-        // user_id: session.user.id
-      });
-      console.log(aiResponse)
+      if (inputMode === "normal"){
+        const aiResponse = await sendChatMessage({
+          query: messageText,
+          video_id: currentVideoId,
+          // user_id: session.user.id
+        });
+        console.log(aiResponse)
+  
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          role: "ASSISTANT",
+          content: typeof aiResponse === 'string' ? aiResponse : aiResponse?.content || "Sorry, I couldn't process your request.",
+          timestamp: new Date(),
+          video_id: currentVideoId
+        };
+  
+        setChatHistory(prev => [...prev, aiMessage]);
+      } else if(inputMode === "notes"){
+        console.log("Enter create notes handler")
+        const notesResponse = await createNotes({
+          query: messageText,
+          video_id: currentVideoId,
+        })
+        console.log("Reply from create notes api:", notesResponse)
+        setShowUpdateNotesStatus(true);
+        setNotesContent({
+          "notedId": notesResponse.notes_id,
+          "content": notesResponse.content
+        })
 
-      const aiMessage: Message = {
-        id: `ai-${Date.now()}`,
-        role: "ASSISTANT",
-        content: typeof aiResponse === 'string' ? aiResponse : aiResponse?.content || "Sorry, I couldn't process your request.",
-        timestamp: new Date(),
-        video_id: currentVideoId
-      };
-
-      setChatHistory(prev => [...prev, aiMessage]);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
       setChatError("Failed to send message. Please try again.");
@@ -176,23 +204,33 @@ export function ChatPage() {
   // Determine if chat should be disabled
   const isChatDisabled = videoStatus !== 'READY' || isTyping || !currentVideoId || !session?.user?.id;
   
-  // Get placeholder text based on video status
-  const getPlaceholderText = () => {
-    switch (videoStatus) {
-      case 'NOT_PROCESSED':
-        return "Process the video first to start chatting";
-      case 'PROCESSING':
+  // Get placeholder text based on video status - using useMemo for performance
+  const inputPlaceholder = useMemo(() => {
+    switch(videoStatus){
+      case "NOT_PROCESSED":
+        return "Process the video first to start chatting...";
+      case "PROCESSING":
         return "Video is being processed...";
-      case 'ERROR':
-        return "Video processing failed";
-      case 'IDLE':
+      case "ERROR":
+        return "Video processing failed...";
+      case "IDLE":
         return "Loading video status...";
-      case 'READY':
-        return "Ask about the video";
+      case "READY":
+        if (inputMode === "attach"){
+          return "Attach notes to get response related to the notes...";
+        }
+        else if(inputMode === "normal"){
+          return "Ask about the video...";
+        }
+        else{
+          return "Provide a query to create notes..."
+        }
+
+
       default:
-        return "Ask about the video";
+        return "Ask about the video...";
     }
-  }
+  }, [videoStatus, inputMode]);
 
   return (
     <div className="h-screen w-full flex flex-col bg-background">
@@ -295,8 +333,8 @@ export function ChatPage() {
                   e.currentTarget.form?.requestSubmit();
                 }
               }}
-              placeholder={getPlaceholderText()}
-              className="pr-12 rounded-full border-border/50 focus:border-primary transition-colors"
+              placeholder={inputPlaceholder}
+              className="p-4 rounded-full border-border/50 transition-colors"
               disabled={isChatDisabled}
             />
             <Button
@@ -319,18 +357,37 @@ export function ChatPage() {
         <div className="flex items-center mt-2 space-x-2">
           <div>
             <Button 
-            className="bg-gray-200 rounded-full w-auto text-sm text-gray-700 hover:bg-gray-300"
-            // disabled={isChatDisabled || inputMode === "notes"}
+            className={`rounded-full w-auto text-sm transition-colors ${
+                inputMode==="attach"
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+            onClick={()=>{
+              if(inputMode==="attach"){
+                setInputMode("normal")
+              }else{
+                setInputMode("attach")
+              }
+            }}
             >
               <Paperclip className="w-4 h-4"/>
-              Select Notes
+              Attach Notes
             </Button>
           </div>
           <div>
             <Button 
-            className="bg-gray-200 rounded-full w-auto text-sm text-gray-700 hover:bg-gray-300"
-            // disabled={isChatDisabled}
-            // onClick={() =>setInputMode("notes")}
+            className={`rounded-full w-auto text-sm transition-colors ${
+              inputMode==="notes"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+            onClick={()=>{
+              if(inputMode==="notes"){
+                setInputMode("normal")
+              }else{
+                setInputMode("notes")
+              }
+            }}
             >
               <FilePlus2 className="w-4 h-4"/>
               Create Notes
@@ -343,6 +400,13 @@ export function ChatPage() {
           **Enter** to `send` and **Shift+Enter** to `new line`
         </ReactMarkdown>
       </div>
+      {showUpdateNotesStatus && (
+        <UpdateNotesStatusDialog 
+          open={showUpdateNotesStatus}
+          onOpenChange={setShowUpdateNotesStatus}
+          notesContent={notesContent}
+        />
+      )}
     </div>
   );
 };

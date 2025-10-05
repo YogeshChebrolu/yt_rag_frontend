@@ -24,7 +24,7 @@ export async function createNotes(request: CreateNotesRequest){
     }
     const data = await response.json();
     console.log(data);
-    return data.content;
+    return data;
   } catch (error) {
     console.error("Failed to create notes", error);
     throw new Error(`Failed to create notes`);
@@ -38,6 +38,7 @@ export interface UpdateNotesStatus{
 
 export async function updateNotesStatus(request: UpdateNotesStatus){
   const JWTHeaders = await getJWTHeaders();
+  console.log("Hit api with params: ", request)
   try {
     const response = await fetch(`${API_URL}/notes/update_notes_status`, {
       method: "POST",
@@ -53,7 +54,7 @@ export async function updateNotesStatus(request: UpdateNotesStatus){
     }
     const data = await response.json()
     console.log(data);
-    return data.content;
+    return data;
   } catch (error) {
     console.error("Error updating notes status", error)
     throw new Error(`Failed to update notes status`)

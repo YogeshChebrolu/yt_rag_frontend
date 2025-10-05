@@ -2,6 +2,7 @@ import './App.css'
 import { useSession } from './context/AuthContext'
 import { AuthPage } from './components/AuthPage'
 import { ChatPage } from './components/chat/ChatPage'
+import { Toaster } from 'react-hot-toast'
 
 function App() {
   const { session, isAuthenticated, isLoading } = useSession()
@@ -27,9 +28,12 @@ function App() {
 
   // Conditional rendering based on authentication state
   return (
+    <>
     <div className="w-full h-full bg-white">
       {isAuthenticated ? <ChatPage /> : <AuthPage />}
     </div>
+    <Toaster position="top-right" reverseOrder={false}/>
+    </>
   )
 }
 
