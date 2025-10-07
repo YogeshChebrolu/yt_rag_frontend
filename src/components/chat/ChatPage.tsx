@@ -9,7 +9,6 @@ import { Button } from "../ui/button";
 import { Paperclip, Send, AlertCircle, RefreshCw, FilePlus2, Notebook } from "lucide-react";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
-import ReactMarkdown from "react-markdown";
 import { UpdateNotesStatusDialog } from "../notes/UpdateNotesStatusDialog";
 import { useNavigate } from "react-router-dom";
 interface Message {
