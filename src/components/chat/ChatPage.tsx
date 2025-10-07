@@ -5,14 +5,13 @@ import { useVideoContext } from "@/context/VideoContext";
 import { useState, useEffect, useRef, useMemo } from "react"
 import { ChatMessage } from "./ChatMessage";
 import { VideoStatus } from "../VideoStatus";
-import { ProfileCard } from "../profile/ProfileCard";
 import { Button } from "../ui/button";
-import { Paperclip, Send, AlertCircle, RefreshCw, FilePlus2 } from "lucide-react";
+import { Paperclip, Send, AlertCircle, RefreshCw, FilePlus2, Notebook } from "lucide-react";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { UpdateNotesStatusDialog } from "../notes/UpdateNotesStatusDialog";
-
+import { useNavigate } from "react-router-dom";
 interface Message {
   id: string;
   role: "USER" | "ASSISTANT";
@@ -35,7 +34,7 @@ export function ChatPage() {
     setChatHistory, 
     error: videoError
   } = useVideoContext()
-  
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
@@ -234,22 +233,8 @@ export function ChatPage() {
 
   return (
     <div className="h-screen w-full flex flex-col bg-background">
-      {/* Header with Profile */}
-      <div className="border-b bg-card p-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <img
-            src="/icons/logo.png"
-            alt="Logo"
-            className="w-7 h-7 rounded"
-            style={{ objectFit: "contain" }}
-          />
-          <h1 className="text-lg font-semibold text-foreground">YT Chat</h1>
-        </div>
-        <ProfileCard />
-      </div>
-
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-chat">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-chat min-h-0">
         <VideoStatus />
         
         {/* Loading History Indicator */}
@@ -312,7 +297,7 @@ export function ChatPage() {
       </div>
 
       {/* Messages Input */}
-      <div className="bg-card pt-4 ml-2">
+      <div className="bg-card pt-4 pb-4 px-4 sticky bottom-0 z-10">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             {/* <Input
@@ -334,7 +319,7 @@ export function ChatPage() {
                 }
               }}
               placeholder={inputPlaceholder}
-              className="p-4 rounded-full border-border/50 transition-colors"
+              className="p-4 rounded-lg border-border/100 transition-colors"
               disabled={isChatDisabled}
             />
             <Button
@@ -357,7 +342,7 @@ export function ChatPage() {
         <div className="flex items-center mt-2 space-x-2">
           <div>
             <Button 
-            className={`rounded-full w-auto text-sm transition-colors ${
+            className={`rounded-md w-auto text-sm transition-colors ${
                 inputMode==="attach"
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -376,7 +361,7 @@ export function ChatPage() {
           </div>
           <div>
             <Button 
-            className={`rounded-full w-auto text-sm transition-colors ${
+            className={`rounded-md w-auto text-sm transition-colors ${
               inputMode==="notes"
               ? "bg-blue-500 text-white hover:bg-blue-600"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -393,12 +378,25 @@ export function ChatPage() {
               Create Notes
             </Button>
           </div>
+          <div>
+            <Button 
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                navigate("/notes")
+              }}
+              className="rounded-md bg-blue-500 text-white hover:bg-blue-600"
+            >
+              <Notebook className="w-4 h-4" />
+              Saved Notes
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="text-sm text-muted-foreground text-center py-2">
-        <ReactMarkdown>
-          **Enter** to `send` and **Shift+Enter** to `new line`
-        </ReactMarkdown>
+        {/* <div className="text-sm text-muted-foreground text-center mt-2">
+          <ReactMarkdown>
+            **Enter** to `send` and **Shift+Enter** to `new line`
+          </ReactMarkdown>
+        </div> */}
       </div>
       {showUpdateNotesStatus && (
         <UpdateNotesStatusDialog 

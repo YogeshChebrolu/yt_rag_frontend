@@ -1,8 +1,8 @@
 import './App.css'
 import { useSession } from './context/AuthContext'
 import { AuthPage } from './components/AuthPage'
-import { ChatPage } from './components/chat/ChatPage'
 import { Toaster } from 'react-hot-toast'
+import { Navigate } from 'react-router-dom'
 
 function App() {
   const { session, isAuthenticated, isLoading } = useSession()
@@ -26,11 +26,15 @@ function App() {
     )
   }
 
-  // Conditional rendering based on authentication state
+  // Redirect to chat if authenticated, otherwise show auth page
+  if (isAuthenticated) {
+    return <Navigate to="/chat" replace />
+  }
+
   return (
     <>
     <div className="w-full h-full bg-white">
-      {isAuthenticated ? <ChatPage /> : <AuthPage />}
+      <AuthPage />
     </div>
     <Toaster position="top-right" reverseOrder={false}/>
     </>
