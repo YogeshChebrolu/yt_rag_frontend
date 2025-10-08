@@ -63,7 +63,7 @@ export function AttachNotesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOnOpenChange}>
-      <DialogContent className="w-[min(90vw,900px)] max-h-[80vh] bg-white text-black p-4 sm:p-6 overflow-hidden">
+      <DialogContent className="w-[min(90vw,900px)] max-h-[80vh] bg-white text-black p-4 sm:p-6 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Select Notes to Attach</DialogTitle>
         </DialogHeader>
@@ -117,14 +117,9 @@ export function AttachNotesDialog({
             </Button>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button
                 onClick={handleAttach}
                 disabled={selectedNotes.length === 0}
+                className="bg-blue-500 text-white hover:bg-blue-600"
               >
                 Attach {selectedNotes.length > 0 ? `(${selectedNotes.length})` : ''} Notes
               </Button>

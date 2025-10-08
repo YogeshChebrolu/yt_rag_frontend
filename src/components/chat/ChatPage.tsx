@@ -263,7 +263,7 @@ export function ChatPage() {
   }, [videoStatus, inputMode]);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-background">
+    <div className="h-full w-full flex flex-col bg-background overflow-hidden min-h-0">
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-chat min-h-0">
         <VideoStatus />
@@ -328,7 +328,7 @@ export function ChatPage() {
       </div>
 
       {/* Messages Input */}
-      <div className="bg-card pt-4 pb-4 px-4 sticky bottom-0 z-10">
+      <div className="bg-card pt-4 pb-4 px-4 sticky bottom-0 z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
         {/* Attached Notes Display */}
         <AttachedNotesCard inputMode={inputMode} />
         
@@ -353,7 +353,7 @@ export function ChatPage() {
                 }
               }}
               placeholder={inputPlaceholder}
-              className="p-4 rounded-lg border-border/100 transition-colors"
+              className="p-4 rounded-lg border-border/100 transition-colors bg-white"
               disabled={isChatDisabled}
             />
             <Button

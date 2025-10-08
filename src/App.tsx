@@ -12,7 +12,7 @@ function App() {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="w-full h-full bg-white flex items-center justify-center p-4">
+      <div className="w-full h-screen bg-white flex items-center justify-center p-4 overflow-hidden">
         <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-full text-center">
           <h1 className="text-xl font-bold text-gray-800 mb-3">
             YouTube RAG Assistant
@@ -33,7 +33,7 @@ function App() {
 
   return (
     <>
-    <div className="w-full h-full bg-white">
+    <div className="w-full h-screen bg-white overflow-hidden">
       <AuthPage />
     </div>
     <Toaster position="top-right" reverseOrder={false}/>
