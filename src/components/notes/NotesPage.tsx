@@ -1,15 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "../ui/button";
-import { ArrowLeft, SortAsc, SortDesc, Youtube, FileText, Grid, List, Search } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { useSession } from "@/context/AuthContext";
+import { ArrowLeft, SortAsc, SortDesc, Youtube, FileText, Grid, List, Search, Video } from "lucide-react";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem } from "../ui/select";
 import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
 import { Input } from "../ui/input";
 import { NotesCard } from "./NotesCard";
-
+import { useNotes } from "@/context/NotesContext";
+import { Ban } from "lucide-react";
 export interface Notes{
   "notes_id": string;
   "video_id": string;
@@ -20,73 +19,74 @@ export interface Notes{
 
 export function NotesPage(){
   const navigate = useNavigate();
-  const [ notes, setNotes ] = useState<Notes[]>([]);
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const { notes, sortOrder, setSortOrder} = useNotes();
+  // const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [ groupByVideo, setGroupByVideo ] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const { session } = useSession();
 
-  const userId = session?.user.id
-  // console.log("user id", session?.user?.id)
+  // const { session } = useSession();
 
-  const fetchNotes = async () => {
-    const { data, error } = await supabase
-      .from('notes')
-      .select("notes_id, user_id, video_id, notes, heading_text, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: sortOrder === "oldest" })
+  // const userId = session?.user.id
+  // // console.log("user id", session?.user?.id)
 
-      if (error) console.error("Error fetching notes: ", error)
-      else setNotes(data);
-  }
-  console.log("Fetched notes: ", notes)
+  // const fetchNotes = async () => {
+  //   const { data, error } = await supabase
+  //     .from('notes')
+  //     .select("notes_id, user_id, video_id, notes, heading_text, created_at")
+  //     .eq("user_id", userId)
+  //     .order("created_at", { ascending: sortOrder === "oldest" })
 
-  useEffect(()=>{
-    if (!userId) return;
-    fetchNotes();
+  //     if (error) console.error("Error fetching notes: ", error)
+  //     else setNotes(data);
+  // }
+  // console.log("Fetched notes: ", notes)
 
-    const channel = supabase
-    .channel("realtime-notes")
-    .on(
-      'postgres_changes',
-      {
-        event: "*",
-        schema: 'public',
-        table: "notes",
-        filter: `user_id=eq.${userId}`,
-      },
-      (payload) => {
-        console.log('Realtime change received!', payload);
+  // useEffect(()=>{
+  //   if (!userId) return;
+  //   fetchNotes();
 
-        setNotes((prevNotes) => {
-          switch(payload.eventType) {
-            case 'INSERT':
-              return [payload.new as Notes, ...prevNotes];
-            case 'UPDATE':
-              return prevNotes.map((n) =>
-                n.notes_id === (payload.new as Notes).notes_id ? payload.new as Notes : n
-              )
-            case "DELETE":
-              return prevNotes.filter((n)=> n.notes_id !== (payload.old as Notes).notes_id);
-            default:
-              return prevNotes
-          }
-        });
-      }
-    )
-    .subscribe();
+  //   const channel = supabase
+  //   .channel("realtime-notes")
+  //   .on(
+  //     'postgres_changes',
+  //     {
+  //       event: "*",
+  //       schema: 'public',
+  //       table: "notes",
+  //       filter: `user_id=eq.${userId}`,
+  //     },
+  //     (payload) => {
+  //       console.log('Realtime change received!', payload);
 
-    //clean up on unmount
-    return ()=> {
-      supabase.removeChannel(channel);
-    };
+  //        setNotes((prevNotes) => {
+  //         switch(payload.eventType) {
+  //           case 'INSERT':
+  //             return [payload.new as Notes, ...prevNotes];
+  //           case 'UPDATE':
+  //             return prevNotes.map((n) =>
+  //               n.notes_id === (payload.new as Notes).notes_id ? payload.new as Notes : n
+  //             )
+  //           case "DELETE":
+  //             return prevNotes.filter((n)=> n.notes_id !== (payload.old as Notes).notes_id);
+  //           default:
+  //             return prevNotes
+  //         }
+  //       });
+  //     }
+  //   )
+  //   .subscribe();
 
-  }, [userId])
+  //   //clean up on unmount
+  //   return ()=> {
+  //     supabase.removeChannel(channel);
+  //   };
 
-  useEffect(() => {
-    if (userId) fetchNotes();
-  }, [sortOrder]);
+  // }, [userId])
+
+  // useEffect(() => {
+  //   if (userId) fetchNotes();
+  // }, [sortOrder]);
 
   // Filter and search notes
   const filteredNotes = useMemo(() => {
@@ -161,7 +161,7 @@ export function NotesPage(){
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSortOrder(prev => prev === "newest" ? "oldest" : "newest")}
+                    onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
                     className="flex items-center gap-2"
                   >
                     {sortOrder === "newest" ? (
@@ -185,12 +185,13 @@ export function NotesPage(){
                     onValueChange={(val) => setGroupByVideo(val === "video")}
                     defaultValue="none"
                   >
-                    <SelectTrigger className="w-28 border rounded px-2 py-1 text-sm">
+                    <SelectTrigger className="w-28 border rounded px-3 py-1 text-sm">
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border rounded shadow-sm ">
-                      <SelectItem value="none"><span className="font-semibold">None</span></SelectItem>
-                      <SelectItem value="video"><span className="font-semibold">Video Id</span></SelectItem>
+                      <SelectItem value="none"><span className="font-semibold flex item-center gap-2"><Ban className="w-4 h-4 my-auto"/>None</span></SelectItem>
+                      <div className="border-t-1"></div>
+                      <SelectItem value="video"><span className="font-semibold flex items-center gap-2"><Video className="w-4 h-4"/>Video Id</span></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
