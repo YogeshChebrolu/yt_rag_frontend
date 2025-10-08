@@ -78,14 +78,14 @@ export function ProfileCard(){
           </div>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-1 border-gray-500 border-1" />
 
         <DropdownMenuItem className="cursor-pointer focus:bg-muted/50" disabled>
           <Settings className="w-4 h-4 mr-2"/>
           <span>Settings</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-1  border-gray-500 border-1" />
 
         <DropdownMenuItem
           className="cursor-pointer focus:bg-destructive/10 focus:text-destructive text-destructive"

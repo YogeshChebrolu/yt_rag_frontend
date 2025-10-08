@@ -6,13 +6,16 @@ import { router } from "./router"
 import { SessionContextProvider } from "./context/AuthContext"
 import { VideoContextProvider } from "./context/VideoContext"
 import { NotesContextProvider } from './context/NotesContext'
+import { SelectedNotesContextProvider } from './context/SelectedNotesContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SessionContextProvider>
       <VideoContextProvider>
         <NotesContextProvider>
-        <RouterProvider router={router}/>
+          <SelectedNotesContextProvider>
+            <RouterProvider router={router}/>
+          </SelectedNotesContextProvider>
         </NotesContextProvider>
       </VideoContextProvider>
     </SessionContextProvider>

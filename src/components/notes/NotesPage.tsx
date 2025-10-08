@@ -190,7 +190,7 @@ export function NotesPage(){
                     </SelectTrigger>
                     <SelectContent className="bg-white border rounded shadow-sm ">
                       <SelectItem value="none"><span className="font-semibold flex item-center gap-2"><Ban className="w-4 h-4 my-auto"/>None</span></SelectItem>
-                      <div className="border-t-1"></div>
+                      <div className="border-t-1 mx-2"></div>
                       <SelectItem value="video"><span className="font-semibold flex items-center gap-2"><Video className="w-4 h-4"/>Video Id</span></SelectItem>
                     </SelectContent>
                   </Select>
@@ -204,15 +204,24 @@ export function NotesPage(){
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-8 w-8 p-0"
+                  className={`h-8 w-8 p-0 ${
+                      viewMode === "grid"
+                      ? "bg-gray-100"
+                      : ""
+                    }`}
                 >
                   <Grid className="w-4 h-4" />
                 </Button>
+                <div className="border-1 h-7"></div>
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-8 w-8 p-0"
+                  className={`h-8 w-8 p-0 ${
+                      viewMode === "list" 
+                      ? "bg-gray-100"
+                      : ""
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </Button>

@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
 import { UpdateNotesStatusDialog } from "../notes/UpdateNotesStatusDialog";
 import { useNavigate } from "react-router-dom";
+import { Notes } from "../notes/NotesPage";
+import { AttachNotesCard } from "../notes/AttachNotesDialog";
 interface Message {
   id: string;
   role: "USER" | "ASSISTANT";
@@ -47,6 +49,9 @@ export function ChatPage() {
   const [ showUpdateNotesStatus, setShowUpdateNotesStatus ] = useState<boolean>(false);
   const [ notesContent, setNotesContent ] = useState<NotesContent | null>(null);
 
+  const [ showAttachNotesCard , setShowAttachNotesCard ] = useState<boolean>(false);
+  const [ attachedNotes, setAttachedNotes ] = useState<Notes[]>([]);
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }
@@ -348,8 +353,10 @@ export function ChatPage() {
             }`}
             onClick={()=>{
               if(inputMode==="attach"){
+                setShowAttachNotesCard(false);
                 setInputMode("normal")
               }else{
+                setShowAttachNotesCard(true);
                 setInputMode("attach")
               }
             }}
@@ -384,7 +391,7 @@ export function ChatPage() {
               onClick={() => {
                 navigate("/notes")
               }}
-              className="rounded-md bg-blue-500 text-white hover:bg-blue-600"
+              className="rounded-md border-amber-500 border-2  hover:bg-amber-500"
             >
               <Notebook className="w-4 h-4" />
               Saved Notes
@@ -404,6 +411,15 @@ export function ChatPage() {
           notesContent={notesContent}
         />
       )}
+
+      {showAttachNotesCard && (
+        <AttachNotesCard 
+          open={showAttachNotesCard}
+          onOpenChange={setShowAttachNotesCard}
+          setInputMode={setInputMode}
+        />
+      )}
+
     </div>
   );
 };
