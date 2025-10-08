@@ -36,7 +36,7 @@ interface VideoContextProviderProps {
 }
 
 export const VideoContextProvider = ({ children }: VideoContextProviderProps) => {
-  const [currentVideoId, setCurrentVideoId] = useState<string | null>("wCNIhFdhgLE");
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
