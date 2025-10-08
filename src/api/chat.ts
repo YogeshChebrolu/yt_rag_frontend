@@ -5,6 +5,7 @@ const API_URL = "http://localhost:8000/core/v1"
 export interface ChatRequest{
     video_id: string
     query: string
+    notes_ids?: string[]
     // user_id: string
 }
 

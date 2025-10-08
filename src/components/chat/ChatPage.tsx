@@ -11,8 +11,9 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
 import { UpdateNotesStatusDialog } from "../notes/UpdateNotesStatusDialog";
 import { useNavigate } from "react-router-dom";
-import { Notes } from "../notes/NotesPage";
-import { AttachNotesCard } from "../notes/AttachNotesDialog";
+import { AttachNotesDialog } from "../notes/AttachNotesDialog";
+import { AttachedNotesCard } from "../notes/AttachedNotesCard";
+import { useSelecteNotes } from "@/context/SelectedNotesContext";
 interface Message {
   id: string;
   role: "USER" | "ASSISTANT";
@@ -35,6 +36,7 @@ export function ChatPage() {
     setChatHistory, 
     error: videoError
   } = useVideoContext()
+  const { selectedNotes, setSelectedNotes } = useSelecteNotes();
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -50,7 +52,6 @@ export function ChatPage() {
   const [ notesContent, setNotesContent ] = useState<NotesContent | null>(null);
 
   const [ showAttachNotesCard , setShowAttachNotesCard ] = useState<boolean>(false);
-  const [ attachedNotes, setAttachedNotes ] = useState<Notes[]>([]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -171,6 +172,27 @@ export function ChatPage() {
         };
   
         setChatHistory(prev => [...prev, aiMessage]);
+      } else if(inputMode === "attach"){
+        // Handle attach mode with selected notes
+        const notesIds = selectedNotes.map(note => note.notes_id);
+        console.log("Attach mode with notes:", notesIds);
+        
+        const aiResponse = await sendChatMessage({
+          query: messageText,
+          video_id: currentVideoId,
+          notes_ids: notesIds,
+        });
+        console.log(aiResponse)
+  
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          role: "ASSISTANT",
+          content: typeof aiResponse === 'string' ? aiResponse : aiResponse?.content || "Sorry, I couldn't process your request.",
+          timestamp: new Date(),
+          video_id: currentVideoId
+        };
+  
+        setChatHistory(prev => [...prev, aiMessage]);
       } else if(inputMode === "notes"){
         console.log("Enter create notes handler")
         const notesResponse = await createNotes({
@@ -194,6 +216,11 @@ export function ChatPage() {
       setNewMessage(messageText); // Restore the message text
     } finally {
       setIsTyping(false);
+      setInputMode("normal");
+      setShowUpdateNotesStatus(false);
+      setShowAttachNotesCard(false);
+      setNotesContent(null);
+      setSelectedNotes([]);
     }
   }
 
@@ -302,6 +329,9 @@ export function ChatPage() {
 
       {/* Messages Input */}
       <div className="bg-card pt-4 pb-4 px-4 sticky bottom-0 z-10">
+        {/* Attached Notes Display */}
+        <AttachedNotesCard inputMode={inputMode} />
+        
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             {/* <Input
@@ -413,7 +443,7 @@ export function ChatPage() {
       )}
 
       {showAttachNotesCard && (
-        <AttachNotesCard 
+        <AttachNotesDialog
           open={showAttachNotesCard}
           onOpenChange={setShowAttachNotesCard}
           setInputMode={setInputMode}
