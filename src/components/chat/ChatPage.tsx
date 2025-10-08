@@ -217,9 +217,7 @@ export function ChatPage() {
     } finally {
       setIsTyping(false);
       setInputMode("normal");
-      setShowUpdateNotesStatus(false);
       setShowAttachNotesCard(false);
-      setNotesContent(null);
       setSelectedNotes([]);
     }
   }
@@ -328,7 +326,7 @@ export function ChatPage() {
       </div>
 
       {/* Messages Input */}
-      <div className="bg-card pt-4 pb-4 px-4 sticky bottom-0 z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+      <div className="bg-card pt-4 pb-4 px-4 mt-auto sticky bottom-0 z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
         {/* Attached Notes Display */}
         <AttachedNotesCard inputMode={inputMode} />
         
