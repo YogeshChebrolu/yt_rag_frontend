@@ -261,9 +261,9 @@ export function ChatPage() {
   }, [videoStatus, inputMode]);
 
   return (
-    <div className="h-full w-full flex flex-col bg-background overflow-hidden min-h-0">
+    <div className="h-full w-full flex flex-col bg-background relative">
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-chat min-h-0">
+      <div className="flex-1 overflow-y-auto p-4 pb-[280px] space-y-4 bg-gradient-chat">
         <VideoStatus />
         
         {/* Loading History Indicator */}
@@ -326,7 +326,7 @@ export function ChatPage() {
       </div>
 
       {/* Messages Input */}
-      <div className="bg-card pt-4 pb-4 px-4 mt-auto sticky bottom-0 z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+      <div className="bg-card pt-4 pb-4 px-4 fixed bottom-0 left-0 right-0 z-10 border-t border-border/50" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
         {/* Attached Notes Display */}
         <AttachedNotesCard inputMode={inputMode} />
         
@@ -371,10 +371,9 @@ export function ChatPage() {
             <Send className="w-4 h-4" />
           </Button>
         </form>
-        <div className="flex items-center mt-2 space-x-2">
-          <div>
-            <Button 
-            className={`rounded-md w-auto text-sm transition-colors ${
+        <div className="flex items-center mt-2 gap-2 w-full text-black font-bold">
+          <Button 
+            className={`flex-1 min-w-0 rounded-md text-xs py-2 transition-colors ${
                 inputMode==="attach"
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -388,14 +387,13 @@ export function ChatPage() {
                 setInputMode("attach")
               }
             }}
-            >
-              <Paperclip className="w-4 h-4"/>
-              Attach Notes
-            </Button>
-          </div>
-          <div>
-            <Button 
-            className={`rounded-md w-auto text-sm transition-colors ${
+          >
+            <Paperclip className="w-4 h-4 mr-1 flex-shrink-0"/>
+            <span className="truncate">Attach Notes</span>
+          </Button>
+          
+          <Button 
+            className={`flex-1 min-w-0 rounded-md text-xs px-2 py-2 transition-colors ${
               inputMode==="notes"
               ? "bg-blue-500 text-white hover:bg-blue-600"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -407,24 +405,22 @@ export function ChatPage() {
                 setInputMode("notes")
               }
             }}
-            >
-              <FilePlus2 className="w-4 h-4"/>
-              Create Notes
-            </Button>
-          </div>
-          <div>
-            <Button 
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                navigate("/notes")
-              }}
-              className="rounded-md border-amber-500 border-2  hover:bg-amber-500"
-            >
-              <Notebook className="w-4 h-4" />
-              Saved Notes
-            </Button>
-          </div>
+          >
+            <FilePlus2 className="w-4 h-4 mr-1 flex-shrink-0"/>
+            <span className="truncate">Create Notes</span>
+          </Button>
+          
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              navigate("/notes")
+            }}
+            className="flex-1 min-w-0 rounded-md border-amber-500 border-2 hover:bg-amber-500 text-xs px-2 py-2"
+          >
+            <Notebook className="w-4 h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">Saved Notes</span>
+          </Button>
         </div>
         {/* <div className="text-sm text-muted-foreground text-center mt-2">
           <ReactMarkdown>
