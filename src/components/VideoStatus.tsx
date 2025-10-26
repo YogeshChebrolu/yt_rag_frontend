@@ -8,7 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 export function VideoStatus() {
   const { 
     currentVideoId, 
-    videoStatus, 
+    videoStatus,
+    currentVideoTitle,
+    currentVideoChannel,
     error,
     setError,
     handleInitializeVideo, 
@@ -96,7 +98,7 @@ export function VideoStatus() {
   return (
     <Card className="mb-4">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">Video Status for {currentVideoId}</CardTitle>
+        <CardTitle className="text-sm font-medium">Video Status for <span className="font-bold">{currentVideoTitle}</span> by <span className="font-bold">{currentVideoChannel}</span></CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">

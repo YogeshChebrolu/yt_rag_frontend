@@ -17,6 +17,8 @@ type VideoStatus = 'IDLE' | 'NOT_PROCESSED' | 'PROCESSING' | "READY" | "ERROR"
 
 interface VideoContextProps {
   currentVideoId: (string | null);
+  currentVideoTitle: (string | null);
+  currentVideoChannel: (string | null);
   setCurrentVideoId: (id: string | null) => void;
   videoStatus: VideoStatus;
   setVideoStatus: (status: VideoStatus) => void;
@@ -37,6 +39,8 @@ interface VideoContextProviderProps {
 
 export const VideoContextProvider = ({ children }: VideoContextProviderProps) => {
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [currentVideoTitle, setCurrentVideoTitle] = useState<string | null>(null);
+  const [currentVideoChannel, setCurrentVideoChannel] = useState<string | null>(null);
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +71,8 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
               if (message.type === "VIDEO_ID_UPDATE") {
                 console.log("VideoContext received video ID update:", message.video_id);
                 setCurrentVideoId(message.video_id);
+                setCurrentVideoTitle(message.video_title);
+                setCurrentVideoChannel(message.video_channel);
                 setError(null);
               }
             } catch (error) {
@@ -80,22 +86,31 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
           });
 
           // Also check chrome storage for current video ID
-          chrome.storage.local.get(['currentVideoId'], (result: any) => {
-            if (chrome.runtime.lastError) {
-              console.error("Failed to get stored video ID:", chrome.runtime.lastError.message);
-            } else if (result.currentVideoId) {
-              console.log("Retrieved stored video ID:", result.currentVideoId);
-              setCurrentVideoId(result.currentVideoId);
-              setError(null);
-            }
-          });
+          chrome.storage.local.get(['currentVideoId', 'currentVideoTitle', 'currentVideoChannel'],
+               (result: any) => {
+              if (chrome.runtime.lastError) {
+                console.error("Failed to get stored video ID:", chrome.runtime.lastError.message);
+              } else if (result.currentVideoId) {
+                console.log("Retrieved stored video ID:", result.currentVideoId);
+                setCurrentVideoId(result.currentVideoId);
+                setCurrentVideoTitle(result.currentVideoTitle);
+                setCurrentVideoChannel(result.currentVideoChannel);
+                setError(null);
+              }
+            });
 
           // Listen for storage changes
           chrome.storage.onChanged.addListener((changes: any, namespace: any) => {
-            if (namespace === 'local' && changes.currentVideoId) {
-              console.log("Video ID changed in storage:", changes.currentVideoId.newValue);
-              setCurrentVideoId(changes.currentVideoId.newValue);
-              setError(null);
+            if (namespace === 'local') {
+              if (changes.currentVideoId) {
+                setCurrentVideoChannel(changes.currentVideoChannel.newValue);
+              }
+              if (changes.currentVideoTitle) {
+                setCurrentVideoTitle(changes.currentVideoTitle.newValue);
+              }
+              if (changes.currentVideoChannel) {
+                setCurrentVideoChannel(changes.currentVideoChannel.newValue);
+              }
             }
           });
 
@@ -230,6 +245,8 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
   const value = {
     currentVideoId,
     setCurrentVideoId,
+    currentVideoTitle,
+    currentVideoChannel,
     videoStatus,
     setVideoStatus,
     chatHistory,

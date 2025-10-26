@@ -8,15 +8,19 @@ function extractVideoId(url) {
   
   const observer = new MutationObserver(() => {
     const videoId = extractVideoId(location.href);
+    const videoTitle = document.getElementsByTagName("h1")[2].innerText;
+    const videoChannel = document.getElementsByClassName("style-scope ytd-channel-name")[0].innerText
     if (videoId && videoId !== lastVideoId) {
       lastVideoId = videoId;
-      console.log("Video change detected:", videoId);
+      console.log("Video change detected with title and channel:", videoId, videoTitle, videoChannel);
       
       // Send message with proper error handling and correct property name
       try {
         chrome.runtime.sendMessage({ 
           type: "VIDEO_ID_UPDATE", 
-          video_id: videoId // Changed from videoId to video_id
+          video_id: videoId,
+          video_title: videoTitle,
+          video_channel: videoChannel
         }, (response) => {
           if (chrome.runtime.lastError) {
             console.error("Error sending video ID update:", chrome.runtime.lastError.message);

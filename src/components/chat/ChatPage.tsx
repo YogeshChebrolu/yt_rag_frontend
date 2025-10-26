@@ -31,7 +31,7 @@ export function ChatPage() {
   const { session } = useSession()
   const { 
     currentVideoId, 
-    videoStatus, 
+    videoStatus,
     chatHistory, 
     setChatHistory, 
     error: videoError
