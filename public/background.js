@@ -5,6 +5,46 @@ let currentVideoChannel = null;
 
 let sidePanelPort = null;
 
+
+async function cropImage(dataUrl, coords) {
+  console.log("Cropping image with coords: ", coords);
+
+  // const img = new Image();
+  // await new Promise(r => { img.onload = r; img.src = dataUrl; })
+
+  // const canvas = new OffscreenCanvas(coords.width, coords.height);
+  // const ctx = canvas.getContext("2d");
+
+  // ctx.drawImage(
+  //   img,
+  //   coords.x,
+  //   coords.y,
+  //   coords.width,
+  //   coords.height,
+  //   0,0,
+  //   coords.width,
+  //   coords.height
+  // );
+  
+  // const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.9 });
+  // const croppedDataUrl = await new Promise(resolve => {
+  //   const reader = new FileReader();
+  //   reader.onload = () => resolve(reader.result);
+  //   reader.readAsDataURL(blob);
+  // });
+
+  if (sidePanelPort) {
+    sidePanelPort.postMessage({
+      type: "CAPTURE_COMPLETE",
+      dataUrl: dataUrl,
+    });
+    console.log("Sent cropped image to side panel");
+  } else {
+    console.warn("Side panel not connected, could not end screenshot.");
+  }  
+}
+
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "VIDEO_ID_UPDATE") {
     console.log("Background got new video_id:", message.video_id);
@@ -44,6 +84,64 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
   }
   
+  else if(message.type === "CAPTURE_REQUEST") {
+    console.log("Received capture request");
+
+    // 1. Get the current active tab
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0] || !tabs[0].id) {
+        console.error("Could not find active tab");
+        return;
+      }
+      const targetTabId = tabs[0].id;
+      const targetWindowId = tabs[0].windowId;
+
+      //2. Ask content script for video's position
+      chrome.tabs.sendMessage(
+        targetTabId,
+        { type: "GET_VIDEO_COORDS"},
+        (coords) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error getting coords: ", chrome.runtime.lastError.message);
+            return;
+          }
+
+          if (!coords) {
+            console.error("Did not receive coordinates from content script")
+          }
+
+          // 3. Capture the visible tab
+          chrome.tabs.get(targetTabId, (tab) => {
+            if (chrome.runtime.lastError || !tab) {
+                console.error("Tab no longer exists.", chrome.runtime.lastError?.message);
+                return;
+            }
+
+            if (!tab.active) {
+                console.error("Tab is no longer active. Capture aborted.");
+                // Optionally, send a message back to React:
+                // if (sidePanelPort) sidePanelPort.postMessage({ type: "CAPTURE_FAILED", reason: "Tab not active" });
+                return;
+            }
+
+            // 4. Capture the VISIBLE tab in the correct window
+            chrome.tabs.captureVisibleTab(
+                targetWindowId, // <-- PASS THE CORRECT WINDOW ID
+                { format: "jpeg", quality: 90 },
+                (dataUrl) => {
+                    if (chrome.runtime.lastError || !dataUrl) {
+                        console.error("Failed to capture tab:", chrome.runtime.lastError?.message);
+                        return;
+                    }
+                    // 5. Crop the image
+                    cropImage(dataUrl, coords);
+                }
+              );
+            });
+        }
+      );
+    });
+  }
   // Return true to indicate we will send a response asynchronously
   return true;
 });

@@ -34,7 +34,11 @@ export function ChatPage() {
     videoStatus,
     chatHistory, 
     setChatHistory, 
-    error: videoError
+    error: videoError,
+    currentScreenShot,
+    handleCaptureCurrentScreenShot,
+    isCapturing,
+    setCurrentScreenShot,
   } = useVideoContext()
   const { selectedNotes, setSelectedNotes } = useSelecteNotes();
   const navigate = useNavigate();
@@ -303,6 +307,33 @@ export function ChatPage() {
           </Alert>
         )}
 
+      {/** Display screenshot */}
+      {currentScreenShot && (
+        <div className="screenshot-container">
+          <p>Captured Screenshot:</p>
+          <img
+            src={currentScreenShot}
+            alt="Captured video screenshot"
+            style={{ width: '100%', border: '1px solid #ccc' }}
+          />
+
+          <button onClick={()=> setCurrentScreenShot(null)}>
+            Clear Screenshot
+          </button>
+
+        </div>
+      )}
+
+
+      {/**Capture screenshot result */}
+      <Button
+        // onClick={captureScreenshot}
+        className="hover:bg-orange-300"
+        onClick={handleCaptureCurrentScreenShot}
+        disabled={isCapturing}
+      >
+        Capture Screenshot
+      </Button>
         {/* Chat Messages */}
         {chatHistory.map((message) => (
           <ChatMessage key={message.id} message={message} />

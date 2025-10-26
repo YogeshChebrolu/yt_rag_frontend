@@ -77,7 +77,7 @@ function checkVideoDetails(){
 
   const videoId = extractVideoId(location.href);
 
-  if(!videoId || videoId === undefined) {
+  if(!videoId || videoId === lastVideoId) {
     return;
   }
 
@@ -141,3 +141,28 @@ try {
 // Run the check once on initial script load
 // We use a small delay to give the DOM a chance to load.
 setTimeout(checkVideoDetails, 500);
+
+// Send video coordinates to capture screen shot
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_VIDEO_COORDS") {
+    console.log("Recieved request for video coordinates");
+
+    const video = document.querySelector('.video-stream.html5-main-video')
+
+     if (video) {
+      const rect = video.getBoundingClientRect();
+
+      sendResponse({
+        x: Math.round(rect.left),
+        y: Math.round(rect.top),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      })
+    }
+    else {
+      console.error("Could not find video element to get coordinates");
+      sendResponse(null);
+    }
+  }
+  return true;
+})

@@ -22,6 +22,9 @@ interface VideoContextProps {
   currentVideoChannel: (string | null);
   videoStatus: VideoStatus;
   currentWatchTime: number;
+  currentScreenShot: string | null;
+  setCurrentScreenShot: (dataUrl: string | null) => void;
+  isCapturing: boolean,
   setVideoStatus: (status: VideoStatus) => void;
   chatHistory: Message[];
   setChatHistory: (messages: Message[] | ((prev: Message[]) => Message[])) => void;
@@ -30,6 +33,7 @@ interface VideoContextProps {
   handleInitializeVideo: (videoId: string) => Promise<void>;
   handleProcessCurrentVideo: () => Promise<void>;
   handleChatMessage: (messageText: string) => Promise<void>;
+  handleCaptureCurrentScreenShot: () => void;
 }
 
 const VideoContext = createContext<VideoContextProps | null>(null)
@@ -43,6 +47,8 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
   const [currentVideoTitle, setCurrentVideoTitle] = useState<string | null>(null);
   const [currentVideoChannel, setCurrentVideoChannel] = useState<string | null>(null);
   const [currentWatchTime, setCurrentWatchTime] = useState<number>(0);
+  const [currentScreenShot, setCurrentScreenShot] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +62,24 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
       setChatHistoryState(messages);
     }
   }, []);
+
+  const handleCaptureCurrentScreenShot = useCallback(() => {
+    if (isCapturing) {
+      console.log("Capture already in progress...")
+      return;
+    }
+    console.log("Requesting screenshot...");
+    setIsCapturing(true);
+    setCurrentScreenShot(null);
+
+    if (chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({ type: "CAPTURE_REQUEST"});
+    } else {
+      console.error("Chrome runtime API not available");
+      setError("Chrome runtime API not available");
+      setIsCapturing(false);
+    }
+  }, [isCapturing, setError, setCurrentScreenShot]);
 
   useEffect(() => {
     let port: any = null;
@@ -77,13 +101,25 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
                 setCurrentVideoChannel(message.video_channel);
                 setError(null);
               }
-              else if (message.type === "TIME_UPDATE") {
+              if (message.type === "TIME_UPDATE") {
                 console.log("Update the currentTime: ", message.currentTime, "seconds");
                 setCurrentWatchTime(message.currentTime);
+              }
+
+              if (message.type === "CAPTURE_COMPLETE") {
+                console.log("Screenshot recieved!", message.dataUrl.substring(0, 50) + "...");
+                setCurrentScreenShot(message.dataUrl);
+                setIsCapturing(false);
+              }
+              if (message.type === "CAPTURE_ERROR") {
+                console.error("Screenshot capture failed:", message.error);
+                setError("Failed to capture screenshot");
+                setIsCapturing(false);
               }
             } catch (error) {
               console.error("Error handling background message:", error);
               setError("Failed to handle video ID update");
+              setIsCapturing(false);
             }
           });
 
@@ -257,6 +293,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
     currentWatchTime,
     videoStatus,
     setVideoStatus,
+    isCapturing,
     chatHistory,
     setChatHistory,
     error,
@@ -264,6 +301,9 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
     handleProcessCurrentVideo,
     handleInitializeVideo,
     handleChatMessage,
+    currentScreenShot,
+    setCurrentScreenShot,
+    handleCaptureCurrentScreenShot,
   };
 
   return <VideoContext.Provider value={value}>{children}</VideoContext.Provider>
