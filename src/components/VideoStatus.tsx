@@ -1,7 +1,7 @@
 import { useVideoContext } from "@/context/VideoContext"
 import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 
 // This should display a card with the status of video at top of chat messages 
 
@@ -11,6 +11,7 @@ export function VideoStatus() {
     videoStatus,
     currentVideoTitle,
     currentVideoChannel,
+    currentWatchTime,
     error,
     setError,
     handleInitializeVideo, 
@@ -98,7 +99,8 @@ export function VideoStatus() {
   return (
     <Card className="mb-4">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">Video Status for <span className="font-bold">{currentVideoTitle}</span> by <span className="font-bold">{currentVideoChannel}</span></CardTitle>
+        <CardTitle className="text-sm font-medium">Video Status for <span className="font-bold">{currentVideoTitle}</span> by <span className="font-bold">{currentVideoChannel} | {currentVideoId}</span></CardTitle>
+        <CardDescription className="text-xs text-gray-500">Current watch time: {(currentWatchTime.toFixed(0))}</CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">

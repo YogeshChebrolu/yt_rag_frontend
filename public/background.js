@@ -3,44 +3,56 @@ let currentVideoId = null;
 let currentVideoTitle = null;
 let currentVideoChannel = null;
 
+let sidePanelPort = null;
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "VIDEO_ID_UPDATE") {
-      console.log("Background got new video_id:", message.video_id);
-      
-      // Store the video ID in background script
-      currentVideoId = message.video_id;
-      currentVideoTitle = message.video_title;
-      currentVideoChannel = message.video_channel;
-      // Store in chrome storage for side panel to access
-      try {
-        chrome.storage.local.set({ 
-          currentVideoId: message.video_id,
-          currentVideoTitle: message.video_title,
-          currentVideoChannel: message.video_channel,
-          lastUpdate: Date.now()
-        }, () => {
-          if (chrome.runtime.lastError) {
-            console.error("Failed to store video ID:", chrome.runtime.lastError.message);
-          } else {
-            console.log("Video ID stored successfully:", message.video_id);
-          }
-        });
-      } catch (error) {
-        console.error("Failed to store video ID:", error);
-      }
-      
-      // Send response back to content script
-      sendResponse({ success: true });
+  if (message.type === "VIDEO_ID_UPDATE") {
+    console.log("Background got new video_id:", message.video_id);
+    
+    // Store the video ID in background script
+    currentVideoId = message.video_id;
+    currentVideoTitle = message.video_title;
+    currentVideoChannel = message.video_channel;
+    // Store in chrome storage for side panel to access
+    try {
+      chrome.storage.local.set({ 
+        currentVideoId: message.video_id,
+        currentVideoTitle: message.video_title,
+        currentVideoChannel: message.video_channel,
+        lastUpdate: Date.now()
+      }, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Failed to store video ID:", chrome.runtime.lastError.message);
+        } else {
+          console.log("Video ID stored successfully:", message.video_id);
+        }
+      });
+    } catch (error) {
+      console.error("Failed to store video ID:", error);
     }
     
-    // Return true to indicate we will send a response asynchronously
-    return true;
-  });
+    // Send response back to content script
+    sendResponse({ success: true });
+  }
+  else if (message.type === "TIME_UPDATE") {
+    if (sidePanelPort) {
+      try {
+        sidePanelPort.postMessage(message);
+      } catch (e) {
+        console.warn("Cound not send time update to side panel, it might be closed", e);
+      }
+    }
+  }
+  
+  // Return true to indicate we will send a response asynchronously
+  return true;
+});
 
 // Handle side panel connection and send current video ID
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "sidepanel") {
     console.log("Side panel connected");
+    sidePanelPort = port;
     
     // Send current video ID to side panel when it connects
     if (currentVideoId) {
@@ -54,9 +66,30 @@ chrome.runtime.onConnect.addListener((port) => {
     
     port.onDisconnect.addListener(() => {
       console.log("Side panel disconnected");
+      sidePanelPort = null;
     });
   }
 });
+
+
+// Add this code instead:
+chrome.runtime.onInstalled.addListener(() => {
+  // Clear any existing rules
+  chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+    // Add a new rule
+    let rule = {
+      conditions: [
+        new chrome.declarativeContent.PageStateMatcher({
+          pageUrl: { hostEquals: 'www.youtube.com', pathPrefix: '/watch' },
+        })
+      ],
+      actions: [new chrome.declarativeContent.ShowAction()]
+    };
+    // Register the rule
+    chrome.declarativeContent.onPageChanged.addRules([rule]);
+  });
+});
+
 
 // Handle extension icon click to open side panel
 chrome.action.onClicked.addListener(async (tab) => {
@@ -70,14 +103,14 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 // Auto-open side panel when user navigates to YouTube
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url && tab.url.includes('youtube.com/watch')) {
-    try {
-      // Auto-open side panel when on YouTube video page
-      await chrome.sidePanel.open({ tabId: tabId });
-      console.log("Auto-opened side panel for YouTube video:", tab.url);
-    } catch (error) {
-      console.error("Failed to auto-open side panel:", error);
-    }
-  }
-});
+// chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+//   if (changeInfo.status === 'complete' && tab.url && tab.url.includes('youtube.com/watch')) {
+//     try {
+//       // Auto-open side panel when on YouTube video page
+//       await chrome.sidePanel.open({ tabId: tabId });
+//       console.log("Auto-opened side panel for YouTube video:", tab.url);
+//     } catch (error) {
+//       console.error("Failed to auto-open side panel:", error);
+//     }
+//   }
+// });

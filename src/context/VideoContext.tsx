@@ -17,10 +17,11 @@ type VideoStatus = 'IDLE' | 'NOT_PROCESSED' | 'PROCESSING' | "READY" | "ERROR"
 
 interface VideoContextProps {
   currentVideoId: (string | null);
+  setCurrentVideoId: (id: string | null) => void;
   currentVideoTitle: (string | null);
   currentVideoChannel: (string | null);
-  setCurrentVideoId: (id: string | null) => void;
   videoStatus: VideoStatus;
+  currentWatchTime: number;
   setVideoStatus: (status: VideoStatus) => void;
   chatHistory: Message[];
   setChatHistory: (messages: Message[] | ((prev: Message[]) => Message[])) => void;
@@ -41,6 +42,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [currentVideoTitle, setCurrentVideoTitle] = useState<string | null>(null);
   const [currentVideoChannel, setCurrentVideoChannel] = useState<string | null>(null);
+  const [currentWatchTime, setCurrentWatchTime] = useState<number>(0);
   const [videoStatus, setVideoStatus] = useState<VideoStatus>('IDLE')
   const [chatHistory, setChatHistoryState] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +77,10 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
                 setCurrentVideoChannel(message.video_channel);
                 setError(null);
               }
+              else if (message.type === "TIME_UPDATE") {
+                console.log("Update the currentTime: ", message.currentTime, "seconds");
+                setCurrentWatchTime(message.currentTime);
+              }
             } catch (error) {
               console.error("Error handling background message:", error);
               setError("Failed to handle video ID update");
@@ -86,8 +92,9 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
           });
 
           // Also check chrome storage for current video ID
-          chrome.storage.local.get(['currentVideoId', 'currentVideoTitle', 'currentVideoChannel'],
-               (result: any) => {
+          chrome.storage.local.get(
+            ['currentVideoId', 'currentVideoTitle', 'currentVideoChannel'],
+            (result: any) => {
               if (chrome.runtime.lastError) {
                 console.error("Failed to get stored video ID:", chrome.runtime.lastError.message);
               } else if (result.currentVideoId) {
@@ -97,7 +104,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
                 setCurrentVideoChannel(result.currentVideoChannel);
                 setError(null);
               }
-            });
+          });
 
           // Listen for storage changes
           chrome.storage.onChanged.addListener((changes: any, namespace: any) => {
@@ -247,6 +254,7 @@ export const VideoContextProvider = ({ children }: VideoContextProviderProps) =>
     setCurrentVideoId,
     currentVideoTitle,
     currentVideoChannel,
+    currentWatchTime,
     videoStatus,
     setVideoStatus,
     chatHistory,
